@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  web:
+    container_name: fast_api
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      - mongodb
+
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/db:/var/lib/mongodb/data
