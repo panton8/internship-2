@@ -6,17 +6,69 @@ services:
     build: .
     ports:
       - "8080:8080"
+    networks:
+      - kafka_connection
     env_file:
       - .env
     volumes:
       - .:/app
     depends_on:
       - mongodb
+      - kafka
+      - zookeeper
 
   mongodb:
     container_name: mongodb
     image: mongo
     ports:
       - "27017:27017"
+    networks:
+      - kafka_connection
     volumes:
       - ./data/db:/var/lib/mongodb/data
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181:2181
+    networks:
+      - kafka_connection
+    volumes:
+      - ./zk-data:/var/lib/zookeeper/data
+      - ./zk-log:/var/lib/zookeeper/log
+
+  kafka:
+    image: wurstmeister/kafka
+    ports:
+      - 9092:9092
+    networks:
+      - kafka_connection
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    depends_on:
+      - zookeeper
+    volumes:
+      - ./kafka-data:/var/lib/kafka/data
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    environment:
+      KAFKA_BROKERCONNECT: "kafka:9092"
+    ports:
+      - 9000:9000
+    networks:
+      - kafka_connection
+    depends_on:
+      - kafka
+
+networks:
+    kafka_connection:
+      external: true
