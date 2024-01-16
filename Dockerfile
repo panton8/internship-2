@@ -1,5 +1,5 @@
 # Stage 1
-FROM python:3.10-alpine as builder
+FROM python:3.10-slim as builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN pip install pipenv && \
     pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
 # Stage 2
-FROM python:3.10-alpine
+FROM python:3.10-slim
 
 WORKDIR /app
 
