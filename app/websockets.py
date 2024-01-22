@@ -11,13 +11,13 @@ from app.config import Config
 async def run_websocket():
     while True:
         res = '/'.join([coin.lower() + '@kline_1s' for coin in Config.assets])
-        cop = Config.assets
+        cop = Config.assets.copy()
         socket = 'wss://stream.binance.com:9443/stream?streams=' + res
-        if Config.assets:
+        if cop:
             async with websockets.connect(socket) as websocket:
                 while True:
                     crypto_data = {}
-                    for i in range(len(Config.assets)):
+                    for i in range(len(cop)):
                         data = await websocket.recv()
                         parsed_data = json.loads(data)
                         crypto_code = parsed_data['data']['s'][:-4]
@@ -31,8 +31,8 @@ async def run_websocket():
                     producer = AIOKafkaProducer(bootstrap_servers='kafka:9092')
                     await producer.start()
                     try:
-                        await producer.send_and_wait('crypto_data', value=res_cr)
+                        if cop != Config.assets:
+                            break
+                        await producer.send('crypto_data', value=res_cr)
                     finally:
                         await producer.stop()
-                    if cop != Config.assets:
-                        break
