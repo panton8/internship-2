@@ -1,2 +1,2 @@
 class Config:
-    assets = ['LTCUSDT']
+    assets = ['BTCUSDT']
