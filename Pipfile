@@ -8,6 +8,8 @@ fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
 motor = "*"
 python-dotenv = "*"
+websocket-client = "*"
+aiokafka = "*"
 
 [dev-packages]
 
